@@ -16,42 +16,27 @@ type battleShip struct {
 	players             []*player.Player
 	gameStarted         bool
 	shipNameMap         map[string]*player.Player
-	allRanges           map[string]map[string]struct{}
+	getPlayerRanges     func(player string) map[string]struct{}
 	getRandonRanges     func(player string) (int, int, error)
 	validateStatergy    func(grid [][]string, cordinatesA, validRange map[string]struct{}) error
 	validateOverlapping func(cordinatesA, cordinatesB map[string]struct{}) error
 }
 
-func NewBattleShip(numerOfPlayer int) *battleShip {
-	return &battleShip{
+func InitGame(n int) (*battleShip, error) {
+	b := &battleShip{
 		numerOfPlayer: 2,
-		gameStarted:   false,
 		shipNameMap:   make(map[string]*player.Player),
+		gameStarted:   false,
 	}
-}
-
-func (b *battleShip) InitGame(n int) error {
 	err := b.validateGridSize(n)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	b.n = n
 	b.initDependency()
-	b.battleField = make([][]string, n)
-	for i := range b.battleField {
-		b.battleField[i] = make([]string, n)
-		for j := range b.battleField[i] {
-			b.battleField[i][j] = "."
-		}
-	}
-
-	for i := 0; i < b.numerOfPlayer; i++ {
-		player := player.NewPlayer(lib.Names[i])
-		b.shipNameMap[lib.Names[i]] = player
-		b.players = append(b.players, player)
-	}
-	b.gameStarted = false
-	return nil
+	b.initGrid()
+	b.initPlayers()
+	return b, nil
 }
 
 func (b *battleShip) AddShip(id string, size, xa, ya, xb, yb int) error {
@@ -66,10 +51,10 @@ func (b *battleShip) AddShip(id string, size, xa, ya, xb, yb int) error {
 		return err
 	}
 
-	if err = b.validateStatergy(b.battleField, shipA.GetCoordinates(), b.allRanges[lib.PlayerA]); err != nil {
+	if err = b.validateStatergy(b.battleField, shipA.GetCoordinates(), b.getPlayerRanges(lib.PlayerA)); err != nil {
 		return err
 	}
-	if err = b.validateStatergy(b.battleField, shipB.GetCoordinates(), b.allRanges[lib.PlayerB]); err != nil {
+	if err = b.validateStatergy(b.battleField, shipB.GetCoordinates(), b.getPlayerRanges(lib.PlayerB)); err != nil {
 		return err
 	}
 
@@ -79,6 +64,7 @@ func (b *battleShip) AddShip(id string, size, xa, ya, xb, yb int) error {
 	b.setGridForNewShip(shipB, lib.PlayerB, id)
 	return nil
 }
+
 func (b *battleShip) ViewBattleField() {
 	fmt.Println("BattleField :")
 	for i := 0; i < b.n; i++ {
@@ -87,6 +73,7 @@ func (b *battleShip) ViewBattleField() {
 		}
 		fmt.Println()
 	}
+	fmt.Println()
 }
 
 func (b *battleShip) StartGame() error {
@@ -103,13 +90,16 @@ func (b *battleShip) StartGame() error {
 			hitPlayer := b.shipNameMap[hitPlayerName]
 			hitPlayer.MarkShipHit(shipName)
 			fmt.Println(player.GetName(), "has HIT target at", x, y)
+			fmt.Println()
 			b.removeShipFromGrid(b.battleField[x][y])
 			if hitPlayer.IsAllShipDead() {
 				gameOver = true
 				fmt.Println("*******************", b.getWinningStatement(player), "*******************")
+				fmt.Println()
 			}
 		} else {
 			fmt.Println(player.GetName(), "has Missed target at", x, y)
+			fmt.Println()
 		}
 		b.ViewBattleField()
 	}

@@ -17,6 +17,9 @@ func NewBasicStratergy(n int) *basic {
 }
 
 func (b *basic) Validate(grid [][]string, cordinates, validRange map[string]struct{}) error {
+	if cordinates == nil || validRange == nil || len(grid) != b.n || len(grid[0]) != b.n {
+		return errors.New("invalid request for Validate")
+	}
 	for coord := range cordinates {
 		x, y := lib.GetCordinates(coord)
 		if _, exists := validRange[coord]; !exists {
@@ -33,6 +36,9 @@ func (b *basic) Validate(grid [][]string, cordinates, validRange map[string]stru
 }
 
 func (b *basic) ValidateOverlapping(cordinatesA, cordinatesB map[string]struct{}) error {
+	if cordinatesA == nil || cordinatesB == nil {
+		return errors.New("nil cordinates in validate overlapping")
+	}
 	for coord := range cordinatesA {
 		if _, exists := cordinatesB[coord]; exists {
 			return errors.New("overlapping ships")

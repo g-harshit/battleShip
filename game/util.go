@@ -55,7 +55,25 @@ func (b *battleShip) initDependency() {
 	b.validateOverlapping = st.ValidateOverlapping
 	rs := rangeService.NewRangeServiceFactory(b.n, 2)
 	b.getRandonRanges = rs.GetRandomCordinates
-	b.allRanges = rs.GetPlayerRange()
+	b.getPlayerRanges = rs.GetPlayerRange
+}
+
+func (b *battleShip) initGrid() {
+	b.battleField = make([][]string, b.n)
+	for i := range b.battleField {
+		b.battleField[i] = make([]string, b.n)
+		for j := range b.battleField[i] {
+			b.battleField[i][j] = "."
+		}
+	}
+}
+
+func (b *battleShip) initPlayers() {
+	for i := 0; i < b.numerOfPlayer; i++ {
+		player := player.NewPlayer(lib.Names[i])
+		b.shipNameMap[lib.Names[i]] = player
+		b.players = append(b.players, player)
+	}
 }
 
 func (b *battleShip) removeShipFromGrid(cood string) {

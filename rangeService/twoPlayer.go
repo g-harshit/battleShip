@@ -19,8 +19,8 @@ func NewTwoPlayerRangeService(n int) *TwoPlayer {
 	}
 }
 
-func (d *TwoPlayer) GetPlayerRange() map[string]map[string]struct{} {
-	return d.playerRange
+func (d *TwoPlayer) GetPlayerRange(player string) map[string]struct{} {
+	return d.playerRange[player]
 }
 
 func addRageForPlayerA(n int) map[string]struct{} {
@@ -46,7 +46,7 @@ func addRageForPlayerB(n int) map[string]struct{} {
 func (d *TwoPlayer) GetRandomCordinates(player string) (int, int, error) {
 	ranges := d.getSearchRange(player)
 	if len(ranges) == 0 {
-		return 0, 0, errors.New("no rang left")
+		return 0, 0, errors.New("no range left")
 	}
 	coords := ""
 	for key := range ranges {

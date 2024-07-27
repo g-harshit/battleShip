@@ -1,7 +1,6 @@
 package game
 
 type Service interface {
-	InitGame(n int) error
 	AddShip(id string, size, xa, ya, xb, yb int) error
 	ViewBattleField()
 	StartGame() error

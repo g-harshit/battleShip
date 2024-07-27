@@ -1,7 +1,7 @@
 package rangeService
 
 type RangeService interface {
-	GetPlayerRange() map[string]map[string]struct{}
+	GetPlayerRange(string) map[string]struct{}
 	GetRandomCordinates(player string) (int, int, error)
 }
 
